@@ -1,12 +1,14 @@
 const express = require('express');
 const path = require('path');
 const app = express();
+const redditData = require(path.join(__dirname, './data.json'));
+
+app.use(express.static(path.join(__dirname, '../public')));
 
 // No need to require ejs when using express
 // set() method does it behind the scenes
-
 app.set('view engine', 'ejs'); // Default view path is cwd/views/
-app.set('views', path.join(__dirname, '/views')); 
+app.set('views', path.join(__dirname, '../views')); 
 // This sets absolute path to views
 // Views folder is where we store our HTML templates
 
@@ -17,6 +19,7 @@ app.get('/', (req, res) => {
 	// Note: render default checks cwd/views/
 })
 
+// An example of looping through this cats array can be found in views
 app.get('/cats', (req, res) => {
 	const cats = ['Blue', 'Rocket', 'Monty', 'Stephanie', 'Winston'];
 	res.render('cats', { cats });
@@ -25,7 +28,13 @@ app.get('/cats', (req, res) => {
 // An example of passing data from routing to template
 app.get('/r/:subreddit', (req, res) => {
 	const { subreddit } = req.params;
-	res.render('subreddit', { subreddit });
+	const data = redditData[subreddit];
+	if (data) {
+		// Spread data to have access to individual properties
+		res.render('subreddit', { ...data});
+	} else {
+		res.render('notfound', { subreddit });
+	}
 })
 
 // Generate and display a random number
